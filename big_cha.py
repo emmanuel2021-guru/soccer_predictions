@@ -14,13 +14,13 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 }
 
-seasonId = 52760
+seasonId = 53417
 
-teamIdHome = 2693
-teamIdAway = 2442
+teamIdHome = 43981
+teamIdAway = 5150
 # teamLocation = 1
 
-excludeId = False
+excludeId = 12255877
 
 teamData = requests.get('https://www.sofascore.com/api/v1/team/{}'.format(teamIdHome), headers=headers)
 team = teamData.json()
@@ -42,6 +42,8 @@ xgHome = []
 xgHomeConc = []
 xgAway = []
 xgAwayConc = []
+pointsHome = []
+pointsAway = []
 for i in range(3):
     response = requests.get('https://www.sofascore.com/api/v1/team/{}/events/last/{}'.format(teamIdHome, i), headers=headers)
     data = response.json()
@@ -50,6 +52,12 @@ for i in range(3):
             if event['homeTeam']['id'] == teamIdHome and event['season']['id'] == seasonId and event['id'] != excludeId:
                 # ids.append(event['id'])
                 # print(event['id'])
+                if event['homeScore']['normaltime'] > event['awayScore']['normaltime']:
+                    pointsHome.append(3)
+                elif event['homeScore']['normaltime'] == event['awayScore']['normaltime']:
+                    pointsHome.append(1)
+                else:
+                    pointsHome.append(0)
                 goalsHome.append(event['homeScore']['normaltime'])
                 goalsHomeConc.append(event['awayScore']['normaltime'])
                 res = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
@@ -117,6 +125,12 @@ for i in range(3):
             if event['awayTeam']['id'] == teamIdAway and event['season']['id'] == seasonId and event['id'] != excludeId:
                 # ids.append(event['id'])
                 # print(event['id'])
+                if event['awayScore']['normaltime'] > event['homeScore']['normaltime']:
+                    pointsAway.append(3)
+                elif event['awayScore']['normaltime'] == event['homeScore']['normaltime']:
+                    pointsAway.append(1)
+                else:
+                    pointsAway.append(0)
                 goalsAway.append(event['awayScore']['normaltime'])
                 goalsAwayConc.append(event['homeScore']['normaltime'])
                 res = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
@@ -171,6 +185,11 @@ print('-----------------------------------')
 print('home: {}, {}'.format(round((big_chances_home_pg + big_chances_away_conc_pg)/2, 2), round((big_chances_made_pg + big_chances_away_conc_made_pg)/2, 2)))
 print('away: {}, {}'.format(round((big_chances_away_pg + big_chances_conc_pg)/2, 2), round((big_chances_away_made_pg + big_chances_conc_made_pg)/2, 2)))
 print('{}, {}'.format(round(((big_chances_home_pg + big_chances_away_conc_pg)/2) - ((big_chances_away_pg + big_chances_conc_pg)/2), 2), round(((big_chances_made_pg + big_chances_away_conc_made_pg)/2) - ((big_chances_away_made_pg + big_chances_conc_made_pg)/2), 2)))
+print('----------------------------------')
+print('Points per game')
+print('----------------------------------')
+print('Home: {}'.format(round(sum(pointsHome) / len(pointsHome), 2)))
+print('Away: {}'.format(round(sum(pointsAway) / len(pointsAway), 2)))
 print('----------------------------------')
 print('Average scores for the match')
 print('----------------------------------')

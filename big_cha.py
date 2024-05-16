@@ -14,13 +14,13 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 }
 
-seasonId = 53417
+seasonId = 52364
 
-teamIdHome = 43981
-teamIdAway = 5150
+teamIdHome = 6064
+teamIdAway = 23951
 # teamLocation = 1
 
-excludeId = 12255877
+excludeId = 12288504
 
 teamData = requests.get('https://www.sofascore.com/api/v1/team/{}'.format(teamIdHome), headers=headers)
 team = teamData.json()
@@ -44,6 +44,8 @@ xgAway = []
 xgAwayConc = []
 pointsHome = []
 pointsAway = []
+crossesHome = []
+crossesAway = []
 for i in range(3):
     response = requests.get('https://www.sofascore.com/api/v1/team/{}/events/last/{}'.format(teamIdHome, i), headers=headers)
     data = response.json()
@@ -81,13 +83,17 @@ for i in range(3):
                             temp_big_cha_miss = int(stat['statisticsItems'][1]['home'])
                             temp_big_cha_miss_conc = int(stat['statisticsItems'][1]['away'])
                             # print(temp_big_cha_miss, temp_big_cha_miss_conc)
-                        break
+                    if stat['groupName'] == 'Passes':
+                        if stat['statisticsItems'][3]['name'] == 'Crosses':
+                            # print(type(stat['statisticsItems'][0]['home']))
+                            temp_cross = stat['statisticsItems'][3]['homeTotal']
                 big_chances_home.append(temp_big_cha)
                 big_chances_home_conc.append(temp_big_cha_conc)
                 big_chances_missed_home.append(temp_big_cha_miss)
                 big_chances_missed_home_conc.append(temp_big_cha_miss_conc)
                 xgHome.append(temp_xg)
                 xgHomeConc.append(temp_xg_conc)
+                crossesHome.append(temp_cross)
         except (TypeError, KeyError, NameError):
             continue
 big_chances_home_pg = sum(big_chances_home)/len(big_chances_home)
@@ -153,13 +159,21 @@ for i in range(3):
                             # print('big chances missed')
                             # print('--------------------------------')
                             # print(temp_big_cha_miss, temp_big_cha_miss_conc)
-                        break
+                    if stat['groupName'] == 'Passes':
+                        if stat['statisticsItems'][3]['name'] == 'Crosses':
+                            # print(type(stat['statisticsItems'][0]['home']))
+                            temp_cross = stat['statisticsItems'][3]['awayTotal']
+                            print('-----------------------------')
+                            print('temp_cross')
+                            print('------------------------------')
+                            print(temp_cross)
                 big_chances_away.append(temp_big_cha)
                 big_chances_away_conc.append(temp_big_cha_conc)
                 big_chances_missed_away.append(temp_big_cha_miss)
                 big_chances_missed_away_conc.append(temp_big_cha_miss_conc)
                 xgAway.append(temp_xg)
                 xgAwayConc.append(temp_xg_conc)
+                crossesAway.append(temp_cross)
         except (TypeError, KeyError, NameError):
             continue
 big_chances_away_pg = sum(big_chances_away)/len(big_chances_away)
@@ -194,3 +208,11 @@ print('----------------------------------')
 print('Average scores for the match')
 print('----------------------------------')
 print('{} - {}'.format(round((goalsScoredHome + goalsConcAway) / 2, 2), round((goalsScoredAway + goalsConcHome) / 2, 2)))
+print('----------------------------------')
+print('Crosses per game')
+print('----------------------------------')
+try:
+    print('Home: {}'.format(round(sum(crossesHome) / len(crossesHome), 2)))
+    print('Away: {}'.format(round(sum(crossesAway) / len(crossesAway), 2)))
+except (ZeroDivisionError):
+    print('!!!Crosses data not found!!!')

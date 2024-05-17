@@ -107,6 +107,11 @@ for i in range(3):
                             big_chances_scored_home.append(temp_big_cha_sco)
                             big_chances_scored_home_conc.append(temp_big_cha_sco_conc)
                             # print(temp_big_cha_miss, temp_big_cha_miss_conc)
+                        else:
+                            temp_big_cha_sco = 0
+                            temp_big_cha_sco_conc = 0
+                            big_chances_scored_home.append(temp_big_cha_sco)
+                            big_chances_scored_home_conc.append(temp_big_cha_sco_conc)
                     elif stat['groupName'] == 'Passes':
                         # print(stat['statisticsItems'][3]['name'])
                         if stat['statisticsItems'][4]['name'] == 'Crosses':
@@ -221,6 +226,11 @@ for i in range(3):
                             # print('big chances missed')
                             # print('--------------------------------')
                             # print(temp_big_cha_miss, temp_big_cha_miss_conc)
+                        else:
+                            temp_big_cha_sco = 0
+                            temp_big_cha_sco_conc = 0
+                            big_chances_scored_away.append(temp_big_cha_sco)
+                            big_chances_scored_away_conc.append(temp_big_cha_sco_conc)
                     elif stat['groupName'] == 'Passes':
                         if stat['statisticsItems'][4]['name'] == 'Crosses':
                             # print(type(stat['statisticsItems'][0]['home']))

@@ -14,13 +14,15 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 }
 
-seasonId = 52364
 
-teamIdHome = 6064
-teamIdAway = 23951
+
+seasonId = 52608
+
+teamIdHome = 5885
+teamIdAway = 2671
 # teamLocation = 1
 
-excludeId = 12288504
+excludeId = False
 
 teamData = requests.get('https://www.sofascore.com/api/v1/team/{}'.format(teamIdHome), headers=headers)
 team = teamData.json()
@@ -28,12 +30,12 @@ print(team['team']['name'])
 print('---------------------------------')
 big_chances_home = []
 big_chances_home_conc = []
-big_chances_missed_home = []
-big_chances_missed_home_conc = []
+big_chances_scored_home = []
+big_chances_scored_home_conc = []
 big_chances_away = []
 big_chances_away_conc = []
-big_chances_missed_away = []
-big_chances_missed_away_conc = []
+big_chances_scored_away = []
+big_chances_scored_away_conc = []
 goalsHome = []
 goalsHomeConc = []
 goalsAway = []
@@ -46,6 +48,8 @@ pointsHome = []
 pointsAway = []
 crossesHome = []
 crossesAway = []
+cornersHome = []
+cornersAway = []
 for i in range(3):
     response = requests.get('https://www.sofascore.com/api/v1/team/{}/events/last/{}'.format(teamIdHome, i), headers=headers)
     data = response.json()
@@ -62,50 +66,86 @@ for i in range(3):
                     pointsHome.append(0)
                 goalsHome.append(event['homeScore']['normaltime'])
                 goalsHomeConc.append(event['awayScore']['normaltime'])
+                res1 = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
+                data2 = res1.json()
+                # print(data2['statistics'][0]['groups'][4]['statisticsItems'][3]['name'])
+                # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
+                if data2['statistics'][0]['groups'][0]['statisticsItems'][4]['name'] == 'Corner kicks':
+                    cornersHome.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][4]['home']))
+                elif data2['statistics'][0]['groups'][0]['statisticsItems'][5]['name'] == 'Corner kicks':
+                    cornersHome.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][5]['home']))
                 res = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
                 data1 = res.json()
+                # print("before loop")
                 for stat in data1['statistics'][0]['groups']:
-                    if stat['groupName'] == 'Expected':
-                        if stat['statisticsItems'][0]['name'] == 'Expected goals':
+                    # if stat[2]['statisticsItems'][0]['name'] == 'Corner kicks':
+                    #     temp_corners = int(stat['statistics'][0]['home'])
+                    #     cornersHome.append(temp_corners)
+                        # print(temp_corners)
+                    # print(stat['groupName'])
+                    if stat['groupName'] == 'Match overview':
+                        if stat['statisticsItems'][1]['name'] == 'Expected goals':
                             # print(type(stat['statisticsItems'][0]['home']))
-                            temp_xg = float(stat['statisticsItems'][0]['home'])
-                            temp_xg_conc = float(stat['statisticsItems'][0]['away'])
-                    if stat['groupName'] == 'Shots extra':
-                        if stat['statisticsItems'][0]['name'] == 'Big chances':
-                            temp_big_cha = int(stat['statisticsItems'][0]['home'])
-                            temp_big_cha_conc = int(stat['statisticsItems'][0]['away'])
+                            temp_xg = float(stat['statisticsItems'][1]['home'])
+                            temp_xg_conc = float(stat['statisticsItems'][1]['away'])
+                            xgHome.append(temp_xg)
+                            xgHomeConc.append(temp_xg_conc)
+                        if stat['statisticsItems'][2]['name'] == 'Big chances':
+                            temp_big_cha = int(stat['statisticsItems'][2]['home'])
+                            temp_big_cha_conc = int(stat['statisticsItems'][2]['away'])
+                            big_chances_home.append(temp_big_cha)
+                            big_chances_home_conc.append(temp_big_cha_conc)
                             # print('big chances')
                             # print('---------------------------------')
                             # print(temp_big_cha, temp_big_cha_conc)
-                        if stat['statisticsItems'][1]['name'] == 'Big chances missed':
+                    elif stat['groupName'] == 'Attack':
+                        if stat['statisticsItems'][0]['name'] == 'Big chances scored':
                             # print('big chances missed')
                             # print('--------------------------------')
-                            temp_big_cha_miss = int(stat['statisticsItems'][1]['home'])
-                            temp_big_cha_miss_conc = int(stat['statisticsItems'][1]['away'])
+                            temp_big_cha_sco = int(stat['statisticsItems'][0]['home'])
+                            temp_big_cha_sco_conc = int(stat['statisticsItems'][0]['away'])
+                            big_chances_scored_home.append(temp_big_cha_sco)
+                            big_chances_scored_home_conc.append(temp_big_cha_sco_conc)
                             # print(temp_big_cha_miss, temp_big_cha_miss_conc)
-                    if stat['groupName'] == 'Passes':
-                        if stat['statisticsItems'][3]['name'] == 'Crosses':
+                    elif stat['groupName'] == 'Passes':
+                        # print(stat['statisticsItems'][3]['name'])
+                        if stat['statisticsItems'][4]['name'] == 'Crosses':
                             # print(type(stat['statisticsItems'][0]['home']))
-                            temp_cross = stat['statisticsItems'][3]['homeTotal']
-                big_chances_home.append(temp_big_cha)
-                big_chances_home_conc.append(temp_big_cha_conc)
-                big_chances_missed_home.append(temp_big_cha_miss)
-                big_chances_missed_home_conc.append(temp_big_cha_miss_conc)
-                xgHome.append(temp_xg)
-                xgHomeConc.append(temp_xg_conc)
-                crossesHome.append(temp_cross)
+                            temp_cross = stat['statisticsItems'][4]['homeTotal']
+                            crossesHome.append(temp_cross)
+                # res1 = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
+                # data2 = res1.json()
+                # # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
+                # if data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'] == 'Corner kicks':
+                #     temp_corners = int(stat['statistics'][0]['home'])
+                
+                
+                
+                # for stat1 in data1['statistics'][0]['groups']:
+                #     if stat1['groupName'] == 'TVData':
+                #         if stat1['statisticsItems'][0]['name'] == 'Corner kicks':
+                #             temp_corners = int(stat['statistics'][0]['home'])
+                #             print(temp_corners)
+                
+                # cornersPerCrossHome.append(round(temp_corners / temp_cross, 2))
         except (TypeError, KeyError, NameError):
             continue
-big_chances_home_pg = sum(big_chances_home)/len(big_chances_home)
-big_chances_made_pg = (sum(big_chances_home) - sum(big_chances_missed_home))/len(big_chances_home)
-big_chances_conc_pg = sum(big_chances_home_conc)/len(big_chances_home_conc)
-big_chances_conc_made_pg = (sum(big_chances_home_conc) - sum(big_chances_missed_home_conc))/len(big_chances_home_conc)
+try:
+    big_chances_home_pg = sum(big_chances_home)/len(big_chances_home)
+    big_chances_made_pg = sum(big_chances_scored_home)/len(big_chances_scored_home)
+    big_chances_conc_pg = sum(big_chances_home_conc)/len(big_chances_home_conc)
+    big_chances_conc_made_pg = sum(big_chances_scored_home_conc) / len(big_chances_scored_home_conc)
+except (ZeroDivisionError):
+    print("!!!Could not get big chances stats!!!")
 goalsScoredHome = round(sum(goalsHome) / len(goalsHome), 2)
 goalsConcHome = round(sum(goalsHomeConc) / len(goalsHomeConc), 2)
-print('{}: {}'.format(stat['statisticsItems'][0]['name'], round(big_chances_home_pg, 2)))
-print('Big chances made(per game): {}'.format(round(big_chances_made_pg, 2)))
-print('Big chances conceded: {}'.format(round(big_chances_conc_pg, 2)))
-print('Big chances conceded made(per game): {}'.format(round(big_chances_conc_made_pg, 2)))
+try:
+    print('{}: {}'.format(stat['statisticsItems'][0]['name'], round(big_chances_home_pg, 2)))
+    print('Big chances made(per game): {}'.format(round(big_chances_made_pg, 2)))
+    print('Big chances conceded: {}'.format(round(big_chances_conc_pg, 2)))
+    print('Big chances conceded made(per game): {}'.format(round(big_chances_conc_made_pg, 2)))
+except (NameError):
+    print("!!!Could not get big chances stats!!!")
 try:
     print('Expected goals: {}'.format(round(sum(xgHome) / len(xgHome), 2)))
     print('Expected goals conceded: {}'.format(round(sum(xgHomeConc) / len(xgHomeConc), 2)))
@@ -113,8 +153,9 @@ except (ZeroDivisionError):
     print('!!!Could not get xG stats!!!')
 print('Goals scored: {}'.format(goalsScoredHome))
 print('Goals conceded: {}'.format(goalsConcHome))
+# print('corners: {}'.format(cornersHome))
 print(len(big_chances_home))
-print(len(big_chances_missed_home))
+print(len(big_chances_scored_home))
 # print(big_chances_home)
 print('----------------------------------------')
 print('----------------------------------------')
@@ -139,53 +180,87 @@ for i in range(3):
                     pointsAway.append(0)
                 goalsAway.append(event['awayScore']['normaltime'])
                 goalsAwayConc.append(event['homeScore']['normaltime'])
+                # res1 = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
+                # data2 = res1.json()
+                # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
+                # cornersAway.append(int(['statistics'][0]['groups'][3]['statisticsItems'][0]['away']))
+                res1 = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
+                data2 = res1.json()
+                # # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
+                # cornersAway.append(int(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['away']))
+                if data2['statistics'][0]['groups'][0]['statisticsItems'][4]['name'] == 'Corner kicks':
+                    cornersAway.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][4]['away']))
+                elif data2['statistics'][0]['groups'][0]['statisticsItems'][5]['name'] == 'Corner kicks':
+                    cornersAway.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][5]['away']))
                 res = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
                 data1 = res.json()
                 for stat in data1['statistics'][0]['groups']:
-                    if stat['groupName'] == 'Expected':
-                        if stat['statisticsItems'][0]['name'] == 'Expected goals':
-                            temp_xg = float(stat['statisticsItems'][0]['away'])
-                            temp_xg_conc = float(stat['statisticsItems'][0]['home'])
-                    if stat['groupName'] == 'Shots extra':
-                        if stat['statisticsItems'][0]['name'] == 'Big chances':
-                            temp_big_cha = int(stat['statisticsItems'][0]['away'])
-                            temp_big_cha_conc = int(stat['statisticsItems'][0]['home'])
+                    if stat['groupName'] == 'Match overview':
+                        if stat['statisticsItems'][1]['name'] == 'Expected goals':
+                            temp_xg = float(stat['statisticsItems'][1]['away'])
+                            temp_xg_conc = float(stat['statisticsItems'][1]['home'])
+                            xgAway.append(temp_xg)
+                            xgAwayConc.append(temp_xg_conc)
+                    # if stat['groupName'] == 'TVData':
+                    #     if stat['statisticsItems'][0]['name'] == 'Corner kicks':
+                    #         temp_corners = int(stat['statistics'][0]['away'])
+                        if stat['statisticsItems'][2]['name'] == 'Big chances':
+                            temp_big_cha = int(stat['statisticsItems'][2]['away'])
+                            temp_big_cha_conc = int(stat['statisticsItems'][2]['home'])
+                            big_chances_away.append(temp_big_cha)
+                            big_chances_away_conc.append(temp_big_cha_conc)
                             # print('big chances')
                             # print('---------------------------------')
                             # print(temp_big_cha, temp_big_cha_conc)
-                        if stat['statisticsItems'][1]['name'] == 'Big chances missed':
-                            temp_big_cha_miss = int(stat['statisticsItems'][1]['away'])
-                            temp_big_cha_miss_conc = int(stat['statisticsItems'][1]['home'])
+                    elif stat['groupName'] == 'Attack':
+                        if stat['statisticsItems'][0]['name'] == 'Big chances scored':
+                            temp_big_cha_sco = int(stat['statisticsItems'][0]['away'])
+                            temp_big_cha_sco_conc = int(stat['statisticsItems'][0]['home'])
+                            big_chances_scored_away.append(temp_big_cha_sco)
+                            big_chances_scored_away_conc.append(temp_big_cha_sco_conc)
                             # print('big chances missed')
                             # print('--------------------------------')
                             # print(temp_big_cha_miss, temp_big_cha_miss_conc)
-                    if stat['groupName'] == 'Passes':
-                        if stat['statisticsItems'][3]['name'] == 'Crosses':
+                    elif stat['groupName'] == 'Passes':
+                        if stat['statisticsItems'][4]['name'] == 'Crosses':
                             # print(type(stat['statisticsItems'][0]['home']))
-                            temp_cross = stat['statisticsItems'][3]['awayTotal']
-                            print('-----------------------------')
-                            print('temp_cross')
-                            print('------------------------------')
-                            print(temp_cross)
-                big_chances_away.append(temp_big_cha)
-                big_chances_away_conc.append(temp_big_cha_conc)
-                big_chances_missed_away.append(temp_big_cha_miss)
-                big_chances_missed_away_conc.append(temp_big_cha_miss_conc)
-                xgAway.append(temp_xg)
-                xgAwayConc.append(temp_xg_conc)
-                crossesAway.append(temp_cross)
+                            temp_cross = stat['statisticsItems'][4]['awayTotal']
+                            crossesAway.append(temp_cross)
+                    #         # print('-----------------------------')
+                    #         # print('temp_cross')
+                    #         # print('------------------------------')
+                    #         # print(temp_cross)
+                # res1 = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
+                # data2 = res1.json()
+                # # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
+                # if data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'] == 'Corner kicks':
+                #     temp_corners = int(stat['statistics'][0]['away'])
+                
+                
+                
+                # for stat2 in data1['statistics'][0]['groups']:
+                #     if stat2['groupName'] == 'TVData':
+                #         if stat2['statisticsItems'][0]['name'] == 'Corner kicks':
+                #             temp_corners = int(stat['statistics'][0]['home'])
+                  
         except (TypeError, KeyError, NameError):
             continue
-big_chances_away_pg = sum(big_chances_away)/len(big_chances_away)
-big_chances_away_made_pg = (sum(big_chances_away) - sum(big_chances_missed_away))/len(big_chances_away)
-big_chances_away_conc_pg = sum(big_chances_away_conc)/len(big_chances_away_conc)
-big_chances_away_conc_made_pg = (sum(big_chances_away_conc) - sum(big_chances_missed_away_conc))/len(big_chances_away_conc)
+try:
+    big_chances_away_pg = sum(big_chances_away)/len(big_chances_away)
+    big_chances_away_made_pg = sum(big_chances_scored_away)/len(big_chances_scored_away)
+    big_chances_away_conc_pg = sum(big_chances_away_conc)/len(big_chances_away_conc)
+    big_chances_away_conc_made_pg = sum(big_chances_scored_away_conc)/len(big_chances_scored_away_conc)
+except (ZeroDivisionError):
+    print('!!!Could not get big chances stats!!!')
 goalsScoredAway = round(sum(goalsAway) / len(goalsAway), 2)
 goalsConcAway = round(sum(goalsAwayConc) / len(goalsAwayConc), 2)
-print('{}: {}'.format(stat['statisticsItems'][0]['name'], round(big_chances_away_pg, 2)))
-print('Big chances made(per game): {}'.format(round(big_chances_away_made_pg, 2)))
-print('Big chances conceded: {}'.format(round(big_chances_away_conc_pg, 2)))
-print('Big chances conceded made(per game): {}'.format(round(big_chances_away_conc_made_pg, 2)))
+try:
+    print('{}: {}'.format(stat['statisticsItems'][0]['name'], round(big_chances_away_pg, 2)))
+    print('Big chances made(per game): {}'.format(round(big_chances_away_made_pg, 2)))
+    print('Big chances conceded: {}'.format(round(big_chances_away_conc_pg, 2)))
+    print('Big chances conceded made(per game): {}'.format(round(big_chances_away_conc_made_pg, 2)))
+except (NameError):
+    print("!!!Could not get big chances stats!!!")
 try:
     print('Expected goals: {}'.format(round(sum(xgAway) / len(xgAway), 2)))
     print('Expected goals conceded: {}'.format(round(sum(xgAwayConc) / len(xgAwayConc), 2)))
@@ -194,11 +269,14 @@ except (ZeroDivisionError):
 print('Goals scored: {}'.format(goalsScoredAway))
 print('Goals conceded: {}'.format(goalsConcAway))
 print(len(big_chances_away))
-print(len(big_chances_missed_away))
+print(len(big_chances_scored_away))
 print('-----------------------------------')
-print('home: {}, {}'.format(round((big_chances_home_pg + big_chances_away_conc_pg)/2, 2), round((big_chances_made_pg + big_chances_away_conc_made_pg)/2, 2)))
-print('away: {}, {}'.format(round((big_chances_away_pg + big_chances_conc_pg)/2, 2), round((big_chances_away_made_pg + big_chances_conc_made_pg)/2, 2)))
-print('{}, {}'.format(round(((big_chances_home_pg + big_chances_away_conc_pg)/2) - ((big_chances_away_pg + big_chances_conc_pg)/2), 2), round(((big_chances_made_pg + big_chances_away_conc_made_pg)/2) - ((big_chances_away_made_pg + big_chances_conc_made_pg)/2), 2)))
+try:
+    print('home: {}, {}'.format(round((big_chances_home_pg + big_chances_away_conc_pg)/2, 2), round((big_chances_made_pg + big_chances_away_conc_made_pg)/2, 2)))
+    print('away: {}, {}'.format(round((big_chances_away_pg + big_chances_conc_pg)/2, 2), round((big_chances_away_made_pg + big_chances_conc_made_pg)/2, 2)))
+    print('{}, {}'.format(round(((big_chances_home_pg + big_chances_away_conc_pg)/2) - ((big_chances_away_pg + big_chances_conc_pg)/2), 2), round(((big_chances_made_pg + big_chances_away_conc_made_pg)/2) - ((big_chances_away_made_pg + big_chances_conc_made_pg)/2), 2)))
+except (NameError):
+    print("!!!Could not get big chances stats!!!")
 print('----------------------------------')
 print('Points per game')
 print('----------------------------------')
@@ -216,3 +294,19 @@ try:
     print('Away: {}'.format(round(sum(crossesAway) / len(crossesAway), 2)))
 except (ZeroDivisionError):
     print('!!!Crosses data not found!!!')
+print('----------------------------------')
+print('Corners per cross')
+print('----------------------------------')
+# print('Home: {}, Away: {}'.format(round(sum(cornersHome) / sum(crossesHome), 2), round(sum(cornersPerCrossAway)/len(cornersPerCrossAway), 2)))
+print('{}, {}'.format(len(cornersHome), len(crossesHome)))
+print('{}, {}'.format(len(cornersAway), len(crossesAway)))
+print('-----------------------------------')
+print('Home: {}, Away: {}'.format(round(sum(cornersHome) / sum(crossesHome), 2), round(sum(cornersAway) / sum(crossesAway), 2)))
+print('-----------------------------------')
+print('Predicted corners')
+print('-----------------------------------')
+homeCross = sum(crossesHome) / len(crossesHome)
+awayCross = sum(crossesAway) / len(crossesAway)
+homeCPC = sum(cornersHome) / sum(crossesHome)
+awayCPC = sum(cornersAway) / sum(crossesAway)
+print('Home: {}, Away: {}'.format(round(homeCross * homeCPC, 2), round(awayCross * awayCPC, 2)))

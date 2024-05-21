@@ -16,13 +16,13 @@ headers = {
 
 
 
-seasonId = 52608
+seasonId = 58388
 
-teamIdHome = 5885
-teamIdAway = 2671
+teamIdHome = 215186
+teamIdAway = 281331
 # teamLocation = 1
 
-excludeId = False
+excludeId = 12060319
 
 teamData = requests.get('https://www.sofascore.com/api/v1/team/{}'.format(teamIdHome), headers=headers)
 team = teamData.json()
@@ -47,9 +47,13 @@ xgAwayConc = []
 pointsHome = []
 pointsAway = []
 crossesHome = []
+crossesConcHome = []
 crossesAway = []
+crossesConcAway = []
 cornersHome = []
+cornersConcHome = []
 cornersAway = []
+cornersConcAway = []
 for i in range(3):
     response = requests.get('https://www.sofascore.com/api/v1/team/{}/events/last/{}'.format(teamIdHome, i), headers=headers)
     data = response.json()
@@ -72,8 +76,10 @@ for i in range(3):
                 # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
                 if data2['statistics'][0]['groups'][0]['statisticsItems'][4]['name'] == 'Corner kicks':
                     cornersHome.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][4]['home']))
+                    cornersConcHome.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][4]['away']))
                 elif data2['statistics'][0]['groups'][0]['statisticsItems'][5]['name'] == 'Corner kicks':
                     cornersHome.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][5]['home']))
+                    cornersConcHome.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][5]['away']))
                 res = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
                 data1 = res.json()
                 # print("before loop")
@@ -98,6 +104,14 @@ for i in range(3):
                             # print('big chances')
                             # print('---------------------------------')
                             # print(temp_big_cha, temp_big_cha_conc)
+                        if stat['statisticsItems'][1]['name'] == 'Big chances':
+                            temp_big_cha = int(stat['statisticsItems'][1]['home'])
+                            temp_big_cha_conc = int(stat['statisticsItems'][1]['away'])
+                            big_chances_home.append(temp_big_cha)
+                            big_chances_home_conc.append(temp_big_cha_conc)
+                            # print('big chances')
+                            # print('---------------------------------')
+                            # print(temp_big_cha, temp_big_cha_conc)
                     elif stat['groupName'] == 'Attack':
                         if stat['statisticsItems'][0]['name'] == 'Big chances scored':
                             # print('big chances missed')
@@ -117,7 +131,9 @@ for i in range(3):
                         if stat['statisticsItems'][4]['name'] == 'Crosses':
                             # print(type(stat['statisticsItems'][0]['home']))
                             temp_cross = stat['statisticsItems'][4]['homeTotal']
+                            temp_cross_conc = stat['statisticsItems'][4]['awayTotal']
                             crossesHome.append(temp_cross)
+                            crossesConcHome.append(temp_cross_conc)
                 # res1 = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
                 # data2 = res1.json()
                 # # print(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['name'])
@@ -195,8 +211,10 @@ for i in range(3):
                 # cornersAway.append(int(data2['statistics'][0]['groups'][3]['statisticsItems'][0]['away']))
                 if data2['statistics'][0]['groups'][0]['statisticsItems'][4]['name'] == 'Corner kicks':
                     cornersAway.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][4]['away']))
+                    cornersConcAway.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][4]['home']))
                 elif data2['statistics'][0]['groups'][0]['statisticsItems'][5]['name'] == 'Corner kicks':
                     cornersAway.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][5]['away']))
+                    cornersConcAway.append(int(data2['statistics'][0]['groups'][0]['statisticsItems'][5]['home']))
                 res = requests.get('https://api.sofascore.com/api/v1/event/{}/statistics'.format(event['id']), headers=headers)
                 data1 = res.json()
                 for stat in data1['statistics'][0]['groups']:
@@ -212,6 +230,14 @@ for i in range(3):
                         if stat['statisticsItems'][2]['name'] == 'Big chances':
                             temp_big_cha = int(stat['statisticsItems'][2]['away'])
                             temp_big_cha_conc = int(stat['statisticsItems'][2]['home'])
+                            big_chances_away.append(temp_big_cha)
+                            big_chances_away_conc.append(temp_big_cha_conc)
+                            # print('big chances')
+                            # print('---------------------------------')
+                            # print(temp_big_cha, temp_big_cha_conc)
+                        if stat['statisticsItems'][1]['name'] == 'Big chances':
+                            temp_big_cha = int(stat['statisticsItems'][1]['away'])
+                            temp_big_cha_conc = int(stat['statisticsItems'][1]['home'])
                             big_chances_away.append(temp_big_cha)
                             big_chances_away_conc.append(temp_big_cha_conc)
                             # print('big chances')
@@ -234,8 +260,11 @@ for i in range(3):
                     elif stat['groupName'] == 'Passes':
                         if stat['statisticsItems'][4]['name'] == 'Crosses':
                             # print(type(stat['statisticsItems'][0]['home']))
-                            temp_cross = stat['statisticsItems'][4]['awayTotal']
-                            crossesAway.append(temp_cross)
+                            # print('here')
+                            # temp_cross = stat['statisticsItems'][4]['awayTotal']
+                            # temp_cross_conc = stat['statisticsItems'][4]['homeTotal']
+                            crossesAway.append(stat['statisticsItems'][4]['awayTotal'])
+                            crossesConcAway.append(stat['statisticsItems'][4]['homeTotal'])
                     #         # print('-----------------------------')
                     #         # print('temp_cross')
                     #         # print('------------------------------')
@@ -282,6 +311,7 @@ print(len(big_chances_away))
 print(len(big_chances_scored_away))
 print('-----------------------------------')
 try:
+    # print(big_chances_home)
     print('home: {}, {}'.format(round((big_chances_home_pg + big_chances_away_conc_pg)/2, 2), round((big_chances_made_pg + big_chances_away_conc_made_pg)/2, 2)))
     print('away: {}, {}'.format(round((big_chances_away_pg + big_chances_conc_pg)/2, 2), round((big_chances_away_made_pg + big_chances_conc_made_pg)/2, 2)))
     print('{}, {}'.format(round(((big_chances_home_pg + big_chances_away_conc_pg)/2) - ((big_chances_away_pg + big_chances_conc_pg)/2), 2), round(((big_chances_made_pg + big_chances_away_conc_made_pg)/2) - ((big_chances_away_made_pg + big_chances_conc_made_pg)/2), 2)))
@@ -298,12 +328,36 @@ print('----------------------------------')
 print('{} - {}'.format(round((goalsScoredHome + goalsConcAway) / 2, 2), round((goalsScoredAway + goalsConcHome) / 2, 2)))
 print('----------------------------------')
 print('Crosses per game')
+print(len(cornersHome), len(crossesHome), len(crossesConcHome))
+print(len(cornersAway), len(crossesAway), len(crossesConcAway))
 print('----------------------------------')
 try:
-    print('Home: {}'.format(round(sum(crossesHome) / len(crossesHome), 2)))
-    print('Away: {}'.format(round(sum(crossesAway) / len(crossesAway), 2)))
+    print('Home: {}'.format(round(((sum(crossesHome) / len(crossesHome)) + (sum(crossesConcAway) / len(crossesConcAway)))/2, 2)))
+    print('Away: {}'.format(round(((sum(crossesAway) / len(crossesAway)) + (sum(crossesConcHome) / len(crossesConcHome)))/2, 2)))
 except (ZeroDivisionError):
     print('!!!Crosses data not found!!!')
+print('----------------------------------')
+print('Corners per game')
+print('----------------------------------')
+try:
+    print('Home: {}'.format(round(((sum(cornersHome) / len(cornersHome)) + (sum(cornersConcAway) / len(cornersConcAway))/2), 2)))
+    print('Away: {}'.format(round(((sum(cornersAway) / len(cornersAway)) + (sum(cornersConcHome) / len(cornersConcHome))/2), 2)))
+except (ZeroDivisionError):
+    print('!!!Corner data not found!!!')
+print('----------------------------------')
+try:
+    print('Home: {}'.format(round(sum(cornersHome) / len(cornersHome), 2)))
+    print(cornersHome)
+    print('Away: {}'.format(round(sum(cornersAway) / len(cornersAway), 2)))
+except (ZeroDivisionError):
+    print('!!!Corner data not found!!!')
+print('----------------------------------')
+try:
+    print('Home: {}'.format(round(sum(cornersConcAway) / len(cornersConcAway), 2)))
+    print(cornersConcHome)
+    print('Away: {}'.format(round(sum(cornersConcHome) / len(cornersConcHome), 2)))
+except (ZeroDivisionError):
+    print('!!!Corner data not found!!!')
 print('----------------------------------')
 print('Corners per cross')
 print('----------------------------------')
@@ -315,8 +369,8 @@ print('Home: {}, Away: {}'.format(round(sum(cornersHome) / sum(crossesHome), 2),
 print('-----------------------------------')
 print('Predicted corners')
 print('-----------------------------------')
-homeCross = sum(crossesHome) / len(crossesHome)
-awayCross = sum(crossesAway) / len(crossesAway)
-homeCPC = sum(cornersHome) / sum(crossesHome)
-awayCPC = sum(cornersAway) / sum(crossesAway)
-print('Home: {}, Away: {}'.format(round(homeCross * homeCPC, 2), round(awayCross * awayCPC, 2)))
+homeCross = ((sum(crossesHome) / len(crossesHome)) + (sum(crossesConcAway) / len(crossesConcAway)))/2
+awayCross = ((sum(crossesAway) / len(crossesAway)) + (sum(crossesConcHome) / len(crossesConcHome)))/2
+homeCPC = ((sum(cornersHome) + sum(cornersConcAway))/2) / sum(crossesHome)
+awayCPC = ((sum(cornersAway) + sum(cornersConcHome))/2) / sum(crossesAway)
+print('Home: {}, Away: {}, Total: {}'.format(round(homeCross * homeCPC, 2), round(awayCross * awayCPC, 2), round((homeCross * homeCPC) + (awayCross * awayCPC), 2)))
